@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"math/rand"
+	"sync"
 	"time"
 )
 
@@ -25,6 +26,7 @@ const codeLength = 10
 type RandomCouponCodeGenerator struct {
 	rnd       *rand.Rand
 	DataStore *datastore.RedisDataStore
+	mu        sync.Mutex
 }
 
 func NewRandomCouponCodeGenerator(ds *datastore.RedisDataStore) *RandomCouponCodeGenerator {
@@ -39,7 +41,9 @@ func (g *RandomCouponCodeGenerator) Generate(ctx context.Context) (string, error
 	for i := 0; i < maxAttempts; i++ {
 		code := make([]rune, codeLength)
 		for j := 0; j < codeLength; j++ {
+			g.mu.Lock()
 			code[j] = allRunes[g.rnd.Intn(len(allRunes))]
+			g.mu.Unlock()
 		}
 
 		codeStr := string(code)
