@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package coupon_issuance.v1;
+
+option go_package = "coupon_issuance/gen/coupon/v1;couponv1";
+
+// 캠페인 상태
+enum CampaignStatus {
+  CAMPAIGN_STATUS_UNSPECIFIED = 0;
+  CAMPAIGN_STATUS_PENDING = 1;   // 시작 전
+  CAMPAIGN_STATUS_ACTIVE = 2;    // 진행 중
+  CAMPAIGN_STATUS_ENDED = 3;     // 종료됨
+}
+
+// Coupon Campaign 정보
+message Campaign {
+  string id = 1;
+  string name = 2;
+  string description = 3; // 캠페인 설명
+  int32 total_coupons_count = 4;
+  int32 issued_coupons_count = 5;
+  string start_time = 6; // RFC3339
+  CampaignStatus status = 7;
+  repeated string issued_coupon_codes = 8;
+}
+
+// 에러 정보
+message Error {
+  string code = 1;
+  string message = 2;
+}
+
+// 쿠폰 정보
+message Coupon {
+  string code = 1;
+  string campaign_id = 2;
+  string issued_at = 3; // RFC3339
+  string user_id = 4;   // 발급받은 사용자(확장성)
+}
+
+// 캠페인 생성 요청
+message CreateCampaignRequest {
+  string name = 1;
+  string description = 2;
+  int32 total_coupons_count = 3;
+  string start_time = 4; // RFC3339
+}
+
+// 캠페인 생성 응답
+message CreateCampaignResponse {
+  Campaign campaign = 1;
+  Error error = 2;
+}
+
+// 캠페인 조회 요청
+message GetCampaignRequest {
+  string campaign_id = 1;
+}
+
+// 캠페인 조회 응답
+message GetCampaignResponse {
+  Campaign campaign = 1;
+  Error error = 2;
+}
+
+// 쿠폰 발급 요청
+message IssueCouponRequest {
+  string campaign_id = 1;
+  string user_id = 2; // 사용자 식별자(확장성)
+}
+
+// 쿠폰 발급 응답
+message IssueCouponResponse {
+  Coupon coupon = 1;
+  Error error = 2;
+}
+
+// CouponService 정의
+service CouponService {
+  rpc CreateCampaign(CreateCampaignRequest) returns (CreateCampaignResponse);
+  rpc GetCampaign(GetCampaignRequest) returns (GetCampaignResponse);
+  rpc IssueCoupon(IssueCouponRequest) returns (IssueCouponResponse);
+} 
