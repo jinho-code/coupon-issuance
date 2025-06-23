@@ -161,4 +161,12 @@ func (r *RedisDataStore) CheckCouponCodeExists(ctx context.Context, code string)
 		return false, fmt.Errorf("%w: %v", ErrDataStoreUnavailable, err)
 	}
 	return exists, nil
+}
+
+func (r *RedisDataStore) DeleteCouponCode(ctx context.Context, code string) error {
+	codeSet := "coupon:codes"
+	if err := r.client.SRem(ctx, codeSet, code).Err(); err != nil {
+		return fmt.Errorf("failed to remove code from set: %w", err)
+	}
+	return nil
 } 
